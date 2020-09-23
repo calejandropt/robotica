@@ -6,7 +6,8 @@
 
 class ejemplo1 : public QWidget, public Ui_Counter {
 Q_OBJECT
-
+private:
+    int cont;
 public:
     ejemplo1();
     QTimer *qTimer;
@@ -16,6 +17,7 @@ public slots:
 
     void doButton();
     void timerScreen();
+    void doResetButton();
 };
 
 #endif // ejemplo1_H

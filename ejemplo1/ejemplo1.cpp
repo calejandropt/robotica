@@ -7,24 +7,27 @@ ejemplo1::ejemplo1() : Ui_Counter() {
     show();
     connect(button, SIGNAL(clicked()), this, SLOT(doButton()));
     connect(qTimer, SIGNAL(timeout()), this, SLOT(timerScreen()));
-
-
+    connect(resetButton, SIGNAL(clicked()), this, SLOT(doResetButton()));
+    this->cont = 0;
 }
 
 void ejemplo1::doButton() {
     if (qTimer->isActive()) {
         qTimer->stop();
         this->button->setText("Start");
-    } else{
+    } else {
         this->button->setText("Stop");
         qTimer->start(1000);
     }
 }
 
 void ejemplo1::timerScreen() {
-    static int cont = 0;
     this->lcdNumber->display(cont++);
 }
 
-
+void ejemplo1::doResetButton() {
+    this->cont = 0;
+    if (!qTimer->isActive())
+        this->lcdNumber->display(cont);
+}
 
