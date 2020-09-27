@@ -8,7 +8,9 @@ ejemplo1::ejemplo1() : Ui_Counter() {
     connect(button, SIGNAL(clicked()), this, SLOT(doButton()));
     connect(qTimer, SIGNAL(timeout()), this, SLOT(timerScreen()));
     connect(resetButton, SIGNAL(clicked()), this, SLOT(doResetButton()));
+    connect(speedSlider, SIGNAL(sliderPressed()), this, SLOT(doSpeedSlider()));
     this->cont = 0;
+
 }
 
 void ejemplo1::doButton() {
@@ -29,5 +31,9 @@ void ejemplo1::doResetButton() {
     this->cont = 0;
     if (!qTimer->isActive())
         this->lcdNumber->display(cont);
+}
+
+void ejemplo1::doSpeedSlider() {
+    qTimer->setInterval(speedSlider->sliderPosition());
 }
 

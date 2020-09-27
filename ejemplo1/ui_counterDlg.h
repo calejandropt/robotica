@@ -47,8 +47,17 @@ public:
         speedSlider->setObjectName(QString::fromUtf8("speedSlider"));
         speedSlider->setGeometry(QRect(210, 170, 231, 31));
         speedSlider->setBaseSize(QSize(50, 0));
-        speedSlider->setValue(49);
+        speedSlider->setMouseTracking(false);
+        speedSlider->setMinimum(100);
+        speedSlider->setMaximum(10000);
+        speedSlider->setSingleStep(1);
+        speedSlider->setPageStep(10);
+        speedSlider->setValue(5000);
+        speedSlider->setSliderPosition(5000);
+        speedSlider->setTracking(true);
         speedSlider->setOrientation(Qt::Horizontal);
+        speedSlider->setInvertedAppearance(false);
+        speedSlider->setInvertedControls(true);
         label = new QLabel(Counter);
         label->setObjectName(QString::fromUtf8("label"));
         label->setGeometry(QRect(260, 150, 141, 20));

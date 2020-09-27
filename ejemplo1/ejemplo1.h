@@ -18,6 +18,7 @@ public slots:
     void doButton();
     void timerScreen();
     void doResetButton();
+    void doSpeedSlider();
 };
 
 #endif // ejemplo1_H
