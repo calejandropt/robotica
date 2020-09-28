@@ -36,7 +36,8 @@ class Timer
         
         void stop() { go.store(!go); };
 		void setPeriod(int p) { period.store(p) ;};
-        
+        int getPeriod(){return period;};
+
     private:
         std::atomic_bool go = false;
 		std::atomic_int period = 0;

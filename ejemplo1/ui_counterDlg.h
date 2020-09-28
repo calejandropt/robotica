@@ -48,16 +48,18 @@ public:
         speedSlider->setGeometry(QRect(210, 170, 231, 31));
         speedSlider->setBaseSize(QSize(50, 0));
         speedSlider->setMouseTracking(false);
-        speedSlider->setMinimum(100);
-        speedSlider->setMaximum(10000);
-        speedSlider->setSingleStep(1);
-        speedSlider->setPageStep(10);
-        speedSlider->setValue(5000);
-        speedSlider->setSliderPosition(5000);
+        speedSlider->setMinimum(10);
+        speedSlider->setMaximum(5000);
+        speedSlider->setSingleStep(10);
+        speedSlider->setPageStep(100);
+        speedSlider->setValue(1000);
+        speedSlider->setSliderPosition(1000);
         speedSlider->setTracking(true);
         speedSlider->setOrientation(Qt::Horizontal);
         speedSlider->setInvertedAppearance(false);
         speedSlider->setInvertedControls(true);
+        speedSlider->setTickPosition(QSlider::NoTicks);
+        speedSlider->setTickInterval(0);
         label = new QLabel(Counter);
         label->setObjectName(QString::fromUtf8("label"));
         label->setGeometry(QRect(260, 150, 141, 20));
@@ -72,7 +74,7 @@ public:
         Counter->setWindowTitle(QApplication::translate("Counter", "Counter", nullptr));
         button->setText(QApplication::translate("Counter", "STOP", nullptr));
         resetButton->setText(QApplication::translate("Counter", "RESET", nullptr));
-        label->setText(QApplication::translate("Counter", "- << Velocidad >> +", nullptr));
+        label->setText(QApplication::translate("Counter", "+ << Velocidad >> -", nullptr));
     } // retranslateUi
 
 };

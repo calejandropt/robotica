@@ -8,7 +8,7 @@ ejemplo1::ejemplo1() : Ui_Counter() {
     connect(button, SIGNAL(clicked()), this, SLOT(doButton()));
     connect(qTimer, SIGNAL(timeout()), this, SLOT(timerScreen()));
     connect(resetButton, SIGNAL(clicked()), this, SLOT(doResetButton()));
-    connect(speedSlider, SIGNAL(sliderPressed()), this, SLOT(doSpeedSlider()));
+    connect(speedSlider, SIGNAL(valueChanged(int)), this, SLOT(doSpeedSlider()));
     this->cont = 0;
 
 }

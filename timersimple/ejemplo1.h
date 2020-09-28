@@ -16,6 +16,7 @@ Q_OBJECT
     
     public slots:
 	void doButton();
+    void doSpinBox();
         
     private:
         Timer mytimer, mytimerLong;
