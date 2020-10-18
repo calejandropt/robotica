@@ -63,8 +63,8 @@ void SpecificWorker::initialize(int period) {
 }
 
 void SpecificWorker::compute() {
-    const float threshold = 300; // millimeters
-    float rot = 2.5;  // rads per second
+    const float threshold = 200; // millimeters
+    float rot = 1.57;  // rads per second
     int section = 0;
     int dist = 0;
     try {
@@ -77,7 +77,7 @@ void SpecificWorker::compute() {
         std::sort(ldataAux.begin(), ldataAux.end(),
                   [](RoboCompLaser::TData a, RoboCompLaser::TData b) { return a.dist < b.dist; });
 
-        if (ldataAux.front().dist < threshold || ldataAux.front().dist == 4000) {
+        if (ldataAux.front().dist < threshold || ldataAux.front().dist >= 4000) {
             std::cout << ldataAux.front().dist << std::endl;
             differentialrobot_proxy->setSpeedBase(200, rot);
             usleep(rand() % (1500000 - 100000 + 1) + 100000);  // random wait between 1.5s and 0.1sec
@@ -85,7 +85,7 @@ void SpecificWorker::compute() {
             if (ldataAux.front().dist < threshold * 2) {
                 dist = ldataAux.front().dist;
             } else {
-                dist = ldataAux.front().dist*2;
+                dist = 1000;
             }
             differentialrobot_proxy->setSpeedBase(dist, 0);
 
