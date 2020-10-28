@@ -17,6 +17,37 @@
  *    along with RoboComp.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "specificworker.h"
+#include <Eigen/Dense>
+
+template <typename T>
+struct Target
+{
+    T content;
+    std::mutex my_mutex;
+    bool activate = false;
+
+    void put(const T &data)
+    {
+        std::lock_guard<std::mutex> guard(my_mutex);
+        content = data;   // generic type must be copy-constructable
+        activate = true;
+    }
+    std::optional<T> get()
+    {
+        std::lock_guard<std::mutex> guard(my_mutex);
+        if(activate)
+            return content;
+        else
+            return {};
+    }
+    void set_task_finished()
+    {
+        std::lock_guard<std::mutex> guard(my_mutex);
+        activate = false;
+    }
+};
+
+
 
 /**
 * \brief Default constructor
@@ -83,8 +114,8 @@ void SpecificWorker::compute()
 	//{
 	//  std::cout << "Error reading from Camera" << e << std::endl;
 	//}
-	
-	
+	RoboCompGenericBase::TBaseState bState;
+	differentialrobot_proxy->getBaseState(bState);
 }
 
 int SpecificWorker::startup_check()
