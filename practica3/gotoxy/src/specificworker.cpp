@@ -46,7 +46,7 @@ struct Target
         activate = false;
     }
 };
-
+Target<Eigen::Vector2f> target;
 
 
 /**
