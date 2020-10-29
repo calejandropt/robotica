@@ -102,20 +102,41 @@ void SpecificWorker::initialize(int period)
 
 void SpecificWorker::compute()
 {
-	//computeCODE
-	//QMutexLocker locker(mutex);
-	//try
-	//{
-	//  camera_proxy->getYImage(0,img, cState, bState);
-	//  memcpy(image_gray.data, &img[0], m_width*m_height*sizeof(uchar));
-	//  searchTags(image_gray);
-	//}
-	//catch(const Ice::Exception &e)
-	//{
-	//  std::cout << "Error reading from Camera" << e << std::endl;
-	//}
-	RoboCompGenericBase::TBaseState bState;
-	differentialrobot_proxy->getBaseState(bState);
+    const float threshold = 150;
+
+    // Obtener posicion del robot
+    RoboCompGenericBase::TBaseState bState;
+    //Obtener estado del mapa base
+    differentialrobot_proxy->getBaseState(bState);
+
+    //Actualizar datos del mapa base
+    innerModel->updateTransformValues("base", bState.x, 0, bState.z, 0, bState.alpha, 0);
+
+    //Posicion del robot target
+    QVec p = innerModel->transform("base", QVec::vec3(target.x(), 0, target.z()), "world");
+
+    // Obtener angulo y distancia
+    float rotAngle = atan2(p.x(), p.z());
+    float dir = p.norm2();
+    if (target.getStatus())
+    {
+        //Si está en el sitio se para y cambia el estado
+        if (dir < threshold)
+        {
+            differentialrobot_proxy->setSpeedBase(0, 0);
+            target.toogleStatus();
+        }
+            //Si está en un ángulo distinto, se gira
+        else if (std::abs(rotAngle) > .1)
+        {
+            differentialrobot_proxy->setSpeedBase(0, rotAngle);
+        }
+            //Si está en la dirección del sitio, aumenta la velocidad
+        else
+        {
+            differentialrobot_proxy->setSpeedBase(300, 0);
+        }
+    }
 }
 
 int SpecificWorker::startup_check()
