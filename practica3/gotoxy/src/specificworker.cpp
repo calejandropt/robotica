@@ -60,38 +60,33 @@ void SpecificWorker::initialize(int period) {
 
 void SpecificWorker::compute() {
 
-    // Obtener posicion del robot
-    RoboCompGenericBase::TBaseState bState{};
     //Obtener estado del mapa base
+    RoboCompGenericBase::TBaseState bState{};
     differentialrobot_proxy->getBaseState(bState);
 
+    //Guardamos los datos del target
     auto t = target.get();
     if (t.has_value()) {
         Eigen::Vector2f tw = t.value();
         Eigen::Vector2f rw(bState.x, bState.z);
         Eigen::Matrix2f rot;
-        rot << cos(bState.alpha), sin(bState.alpha), -sin(bState.alpha), cos(bState.alpha);
+        rot << cos(bState.alpha), -sin(bState.alpha), sin(bState.alpha), cos(bState.alpha);
         auto tr = rot * (tw - rw);
         // Obtener angulo y distancia
-        auto beta = atan2(tw.y(), tw.x());
+        auto beta = atan2(tr.x(), tr.y());
         auto dist = tr.norm();
 
-        std::cout << "beta: " << beta << std::endl;
-        std::cout << "dist: " << dist << std::endl;
-
         //Si está en el sitio se para y cambia el estado
-        if (dist == 0.0) {
+        if (dist < 150) {
             differentialrobot_proxy->setSpeedBase(0, 0);
             target.set_task_finished();
         }
             //Si está en un ángulo distinto, se gira
-        else if (fabs(beta) < 0.05) {
-            std::cout << "fabs(beta): " << fabs(beta) << std::endl;
+        else if (fabs(beta) > .05) {
             differentialrobot_proxy->setSpeedBase(0, beta);
         }
             //Si está en la dirección del sitio, aumenta la velocidad
         else {
-            std::cout << "distMoving: " << dist << std::endl;
             differentialrobot_proxy->setSpeedBase(400, 0);
         }
     }
