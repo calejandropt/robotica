@@ -17,56 +17,24 @@
  *    along with RoboComp.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "specificworker.h"
-#include <Eigen/Dense>
 
-template <typename T>
-struct Target
-{
-    T content;
-    std::mutex my_mutex;
-    bool activate = false;
-
-    void put(const T &data)
-    {
-        std::lock_guard<std::mutex> guard(my_mutex);
-        content = data;   // generic type must be copy-constructable
-        activate = true;
-    }
-    std::optional<T> get()
-    {
-        std::lock_guard<std::mutex> guard(my_mutex);
-        if(activate)
-            return content;
-        else
-            return {};
-    }
-    void set_task_finished()
-    {
-        std::lock_guard<std::mutex> guard(my_mutex);
-        activate = false;
-    }
-};
 Target<Eigen::Vector2f> target;
-
 
 /**
 * \brief Default constructor
 */
-SpecificWorker::SpecificWorker(TuplePrx tprx, bool startup_check) : GenericWorker(tprx)
-{
-	this->startup_check_flag = startup_check;
+SpecificWorker::SpecificWorker(TuplePrx tprx, bool startup_check) : GenericWorker(tprx) {
+    this->startup_check_flag = startup_check;
 }
 
 /**
 * \brief Default destructor
 */
-SpecificWorker::~SpecificWorker()
-{
-	std::cout << "Destroying SpecificWorker" << std::endl;
+SpecificWorker::~SpecificWorker() {
+    std::cout << "Destroying SpecificWorker" << std::endl;
 }
 
-bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
-{
+bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params) {
 //	THE FOLLOWING IS JUST AN EXAMPLE
 //	To use innerModelPath parameter you should uncomment specificmonitor.cpp readConfig method content
 //	try
@@ -76,82 +44,70 @@ bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
 //		innerModel = std::make_shared(innermodel_path);
 //	}
 //	catch(const std::exception &e) { qFatal("Error reading config params"); }
-
-
-
-
-
-
-	return true;
+    return true;
 }
 
-void SpecificWorker::initialize(int period)
-{
-	std::cout << "Initialize worker" << std::endl;
-	this->Period = period;
-	if(this->startup_check_flag)
-	{
-		this->startup_check();
-	}
-	else
-	{
-		timer.start(Period);
-	}
+void SpecificWorker::initialize(int period) {
+    std::cout << "Initialize worker" << std::endl;
+    this->Period = period;
+    if (this->startup_check_flag) {
+        this->startup_check();
+    } else {
+        timer.start(Period);
+    }
 
 }
 
-void SpecificWorker::compute()
-{
-    const float threshold = 150;
+void SpecificWorker::compute() {
 
     // Obtener posicion del robot
-    RoboCompGenericBase::TBaseState bState;
+    RoboCompGenericBase::TBaseState bState{};
     //Obtener estado del mapa base
     differentialrobot_proxy->getBaseState(bState);
 
-    //Actualizar datos del mapa base
-    innerModel->updateTransformValues("base", bState.x, 0, bState.z, 0, bState.alpha, 0);
+    auto t = target.get();
+    if (t.has_value()) {
+        Eigen::Vector2f tw = t.value();
+        Eigen::Vector2f rw(bState.x, bState.z);
+        Eigen::Matrix2f rot;
+        rot << cos(bState.alpha), sin(bState.alpha), -sin(bState.alpha), cos(bState.alpha);
+        auto tr = rot * (tw - rw);
+        // Obtener angulo y distancia
+        auto beta = atan2(tw.y(), tw.x());
+        auto dist = tr.norm();
 
-    //Posicion del robot target
-    QVec p = innerModel->transform("base", QVec::vec3(target.x(), 0, target.z()), "world");
+        std::cout << "beta: " << beta << std::endl;
+        std::cout << "dist: " << dist << std::endl;
 
-    // Obtener angulo y distancia
-    float rotAngle = atan2(p.x(), p.z());
-    float dir = p.norm2();
-    if (target.getStatus())
-    {
         //Si está en el sitio se para y cambia el estado
-        if (dir < threshold)
-        {
+        if (dist == 0.0) {
             differentialrobot_proxy->setSpeedBase(0, 0);
-            target.toogleStatus();
+            target.set_task_finished();
         }
             //Si está en un ángulo distinto, se gira
-        else if (std::abs(rotAngle) > .1)
-        {
-            differentialrobot_proxy->setSpeedBase(0, rotAngle);
+        else if (fabs(beta) < 0.05) {
+            std::cout << "fabs(beta): " << fabs(beta) << std::endl;
+            differentialrobot_proxy->setSpeedBase(0, beta);
         }
             //Si está en la dirección del sitio, aumenta la velocidad
-        else
-        {
-            differentialrobot_proxy->setSpeedBase(300, 0);
+        else {
+            std::cout << "distMoving: " << dist << std::endl;
+            differentialrobot_proxy->setSpeedBase(400, 0);
         }
     }
 }
 
-int SpecificWorker::startup_check()
-{
-	std::cout << "Startup check" << std::endl;
-	QTimer::singleShot(200, qApp, SLOT(quit()));
-	return 0;
+int SpecificWorker::startup_check() {
+    std::cout << "Startup check" << std::endl;
+    QTimer::singleShot(200, qApp, SLOT(quit()));
+    return 0;
 }
 
 
 //SUBSCRIPTION to setPick method from RCISMousePicker interface
-void SpecificWorker::RCISMousePicker_setPick(RoboCompRCISMousePicker::Pick myPick)
-{
-//subscribesToCODE
-
+void SpecificWorker::RCISMousePicker_setPick(RoboCompRCISMousePicker::Pick myPick) {
+    std::cout << myPick.x << myPick.y << myPick.z << std::endl;
+    target.put(Eigen::Vector2f(myPick.x, myPick.z));
 }
 
 
