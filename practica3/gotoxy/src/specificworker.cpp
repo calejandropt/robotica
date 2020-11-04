@@ -83,11 +83,12 @@ void SpecificWorker::compute() {
         }
             //Si está en un ángulo distinto, se gira
         else if (fabs(beta) > .05) {
-            differentialrobot_proxy->setSpeedBase(0, beta);
-        }
-            //Si está en la dirección del sitio, aumenta la velocidad
-        else {
-            differentialrobot_proxy->setSpeedBase(400, 0);
+            auto vRot = beta;
+            auto turningSpeed = exp(
+                    -pow(vRot, 2) / (-pow(0.5, 2) / log(0.1))); //0.5 angulo en radianes y 0.1 factor de deceleración.
+            auto closeToTarget = std::min(dist / 1000, 1.f);
+            auto advSpeed = 1000 * turningSpeed * closeToTarget;
+            differentialrobot_proxy->setSpeedBase(advSpeed, vRot);
         }
     }
 }
