@@ -91,6 +91,20 @@ void SpecificWorker::compute() {
             differentialrobot_proxy->setSpeedBase(advSpeed, vRot);
         }
     }
+
+    //PRÁCTICA 4:
+    RoboCompLaser::TLaserData ldata = laser_proxy->getLaserData();
+    RoboCompLaser::TLaserData ldataAux;
+    float closer = 4500;
+    for(int i=0; i < ldata.size(); i++) {
+        if(ldata.back().dist < 4000){
+            ldataAux.push_back(ldata.back());
+            ldataAux.back().angle = ldataAux.back().angle + EIGEN_PI;
+            ldataAux.back().dist = 4000 - ldataAux.back().dist;
+        }
+        ldata.pop_back();
+    }
+
 }
 
 int SpecificWorker::startup_check() {
