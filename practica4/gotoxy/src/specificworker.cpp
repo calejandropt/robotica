@@ -62,11 +62,13 @@ void SpecificWorker::compute() {
 
     //Obtener estado del mapa base
     RoboCompGenericBase::TBaseState bState{};
+    RoboCompLaser::TLaserData ldata = laser_proxy->getLaserData();
     differentialrobot_proxy->getBaseState(bState);
 
     //Guardamos los datos del target
     auto t = target.get();
     if (t.has_value()) {
+        /*
         Eigen::Vector2f tw = t.value();
         Eigen::Vector2f rw(bState.x, bState.z);
         Eigen::Matrix2f rot;
@@ -75,8 +77,34 @@ void SpecificWorker::compute() {
         // Obtener angulo y distancia
         auto beta = atan2(tr.x(), tr.y());
         auto dist = tr.norm();
+        */
+        //PRÁCTICA 4:
+        auto X = 0;
+        auto Z = 0;
+        auto Tx = 0;
+        auto Tz = 0;
+        for (auto fl: ldata) {
+            if (fl.dist < 4000) {
+                X = 1 * sin(fl.angle);
+                Z = 1 * cos(fl.angle);
+                X = -X;
+                Z = -Z;
+                X *= (1/pow(X/1000,2));
+                Z *= (1/pow(Z/1000,2));
+                Tx += X;
+                Tz += Z;
+            }
+        }
+        Eigen::Vector2f tw = t.value();
+        Eigen::Vector2f tpw(Tx,Tz);
+        auto Twp = tpw + tw;
 
+
+        // Obtener angulo y distancia
+        auto beta = atan2(Twp.x(), Twp.y());
+        auto dist = Twp.norm();
         //Si está en el sitio se para y cambia el estado
+
         if (dist < 150) {
             differentialrobot_proxy->setSpeedBase(0, 0);
             target.set_task_finished();
@@ -84,15 +112,17 @@ void SpecificWorker::compute() {
             //Si está en un ángulo distinto, se gira
         else if (fabs(beta) > .05) {
             auto vRot = beta;
-            auto turningSpeed = exp(
-                    -pow(vRot, 2) / (-pow(0.5, 2) / log(0.1))); //0.5 angulo en radianes y 0.1 factor de deceleración.
+            auto turningSpeed = exp(-pow(vRot, 2) / (-pow(0.5, 2) / log(0.1))); //0.5 angulo en radianes y 0.1 factor de deceleración.
             auto closeToTarget = std::min(dist / 1000, 1.f);
             auto advSpeed = 1000 * turningSpeed * closeToTarget;
+            //std::cout << "gira: " << beta << " velocidad: " << advSpeed << std::endl;
             differentialrobot_proxy->setSpeedBase(advSpeed, vRot);
         }
+
     }
 
     //PRÁCTICA 4:
+    /*
     RoboCompLaser::TLaserData ldata = laser_proxy->getLaserData();
     auto X = 0;
     auto Z = 0;
@@ -100,16 +130,17 @@ void SpecificWorker::compute() {
     auto Tz = 0;
     for (int i = 0; i < ldata.size(); i++) {
         if (ldata.back().dist < 4000) {
-            X = ldata.back().dist * sin(ldata.back().angle);
-            Z = ldata.back().dist * sin(ldata.back().angle);
-            Tx = Tx + X;
-            Tz = Tz + Z;
+            X = (4000 - ldata.back().dist) * sin(ldata.back().angle);
+            Z = (4000 - ldata.back().dist) * cos(ldata.back().angle);
+            Tx += X;
+            Tz += Z;
         }
         ldata.pop_back();
     }
     Eigen::Vector2f tw = t.value();
     Eigen::Vector2f tpw(-Tx, -Tz);
-    auto Tpw = tw + tpw;
+    auto Twp = tw + tpw;
+     */
 
 }
 
