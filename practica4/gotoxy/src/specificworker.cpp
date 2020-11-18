@@ -94,16 +94,22 @@ void SpecificWorker::compute() {
 
     //PRÁCTICA 4:
     RoboCompLaser::TLaserData ldata = laser_proxy->getLaserData();
-    RoboCompLaser::TLaserData ldataAux;
-    float closer = 4500;
-    for(int i=0; i < ldata.size(); i++) {
-        if(ldata.back().dist < 4000){
-            ldataAux.push_back(ldata.back());
-            ldataAux.back().angle = ldataAux.back().angle + EIGEN_PI;
-            ldataAux.back().dist = 4000 - ldataAux.back().dist;
+    auto X = 0;
+    auto Z = 0;
+    auto Tx = 0;
+    auto Tz = 0;
+    for (int i = 0; i < ldata.size(); i++) {
+        if (ldata.back().dist < 4000) {
+            X = ldata.back().dist * sin(ldata.back().angle);
+            Z = ldata.back().dist * sin(ldata.back().angle);
+            Tx = Tx + X;
+            Tz = Tz + Z;
         }
         ldata.pop_back();
     }
+    Eigen::Vector2f tw = t.value();
+    Eigen::Vector2f tpw(-Tx, -Tz);
+    auto Tpw = tw + tpw;
 
 }
 
