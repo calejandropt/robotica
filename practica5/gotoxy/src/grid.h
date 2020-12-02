@@ -66,26 +66,48 @@ public:
      * @param z
      * @param v
      */
-    void set_Value(int x, int z, bool v)
-    {
-       // this->array[x][z] = v;
-       //auto [i, j] = transformar(x,z);
-       //array[i][j].occupied = v;
-       //if(v)
-       //     array[i][j].paint_cell->setColor(QColor());
+    //void set_value(int x, int z, bool v){
 
-    }
+    //}
+
     /**
      * devolvemos el valor de la coordenada x,z
      * @param x
      * @param z
      * @return
      */
-    bool get_value(int x, int z)
-    {
+    bool get_value(int x, int z) {
         //auto [i, j] = transformar(x,z);
         //return  this->array[x][z];
         return true;
+    }
+
+    void set_occupied(int x, int z) {
+        auto[i, j] = transformWtG(x, z);
+        array[i][j].occupied = true;
+        array[i][j].paint_cell->setBrush(QColor("Red"));
+    }
+
+    bool get_occupied(int x, int z) {
+        auto[i, j] = transformWtG(x, z);
+        return array[i][j].occupied;
+    }
+    /**
+     * Transforma las coordenadas del mundo al grid
+     * @param i -> coordenada x
+     * @param j -> coordenada z
+     * @return (X,Z) en el grid
+     */
+    std::optional <std::tuple<int, int>> transformWtG(int i, int j) {
+        int k = i/tile + (width / tile) / 2;
+        int l = j/tile + (width / tile) / 2;
+            return std::make_tuple(k, l);
+    }
+
+    std::tuple<int, int> transformGtW(int k, int l){
+        int i = k * tile - width / 2;
+        int j = l * tile - width / 2;
+        return std::make_tuple(i, j);
     }
 
 };

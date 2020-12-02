@@ -78,6 +78,7 @@ public:
 
 public slots:
 
+    void makeObstacles(int n);
     void compute();
     int startup_check();
     void initialize(int period);

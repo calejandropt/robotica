@@ -111,6 +111,28 @@ void SpecificWorker::initialize(int period)
 }
 
 
+void SpecificWorker::makeObstacles(int n){
+    for(int i = 0; i < n; i++){
+        auto box = "box" + QString::number(1);
+        auto node = innerModel->getNode(box);
+        auto bmesh = innerModel->getNode("bmesh"+QString::number(1));
+        if(node and bmesh){
+            auto pose = innerModel->transform("world", box);
+            auto plane = dynamic_cast<InnerModelPlane *>(bmesh);
+            int x = pose.x();
+            int z = pose.z();
+            int width = plane->depth;
+            int depth = plane->width;
+
+            for(int i = x-width/2;i < x + width/2; i++){
+                for(int j = z - depth/2; j < z + depth/2; j++){
+                    grid.set_occupied(i,j);
+                }
+            }
+        }
+    }
+}
+
 void SpecificWorker::compute()
 {
     //Coordenadas del robot
