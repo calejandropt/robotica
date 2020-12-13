@@ -52,18 +52,21 @@ class SpecificWorker : public GenericWorker {
             activate = true;
             empty = false;
         }
+
         std::optional<T> get() {
             std::lock_guard<std::mutex> guard(mutex);
-            if (not empty){
+            if (not empty) {
                 return data;
             } else
                 return {};
         }
+
         void set_task_finished() {
             std::lock_guard<std::mutex> guard(mutex);
             activate = false;
         }
-        bool is_active()  {
+
+        bool is_active() {
             std::lock_guard<std::mutex> guard(mutex);
             return activate;
         }
@@ -71,17 +74,29 @@ class SpecificWorker : public GenericWorker {
 
 public:
     SpecificWorker(TuplePrx tprx, bool startup_check);
+
     ~SpecificWorker();
+
     bool setParams(RoboCompCommonBehavior::ParameterList params);
+
     void RCISMousePicker_setPick(RoboCompRCISMousePicker::Pick myPick);
 
 
 public slots:
 
     void makeObstacles(int n);
+
     void compute();
+
     int startup_check();
+
     void initialize(int period);
+
+    void compute_navigation_function(Target T);
+
+    std::vector<Value> neighboors(Value v, int dist);
+
+    void reset_cell_distances();
 
 private:
     std::shared_ptr<InnerModel> innerModel;
@@ -94,12 +109,16 @@ private:
     Target<Tpose> target_buffer;
     Tpose target;
     using tupla = std::tuple<float, float, float, float, float>;
-    Eigen::Vector2f transformar_targetRW( RoboCompGenericBase::TBaseState bState);
+
+    Eigen::Vector2f transformar_targetRW(RoboCompGenericBase::TBaseState bState);
 
     //e4
-    std::vector<tupla> calcularPuntos(float vOrigen,  float wOrigen);
+    std::vector<tupla> calcularPuntos(float vOrigen, float wOrigen);
+
     std::vector<tupla> ordenar(std::vector<tupla> vector, float x, float z);
-    std::vector<tupla> obstaculos(std::vector<tupla> vector, float aph,const RoboCompLaser::TLaserData &ldata);
+
+    std::vector<tupla> obstaculos(std::vector<tupla> vector, float aph, const RoboCompLaser::TLaserData &ldata);
+
     void dynamicWindowApproach(RoboCompGenericBase::TBaseState bState, RoboCompLaser::TLaserData &ldata);
 
     //draw
@@ -108,11 +127,20 @@ private:
     QGraphicsItem *robot_polygon = nullptr;
     QGraphicsItem *laser_polygon = nullptr;
     const float ROBOT_LENGTH = 400;
-    void draw_things(const RoboCompGenericBase::TBaseState &bState, const RoboCompLaser::TLaserData &ldata, const std::vector<tupla> &puntos, const tupla &front);
-    std::vector<QGraphicsEllipseItem*> arcs_vector;
+
+    void draw_things(const RoboCompGenericBase::TBaseState &bState, const RoboCompLaser::TLaserData &ldata,
+                     const std::vector<tupla> &puntos, const tupla &front);
+
+    std::vector<QGraphicsEllipseItem *> arcs_vector;
 
     //grid
     Grid<int, -2500, int, 5000, int, 100> grid;
+
+protected:
+    void resizeEvent(QResizeEvent *event) {
+        graphicsView->fitInView(scene.sceneRect(), Qt::KeepAspectRatio);
+    }
+
 };
 
 #endif

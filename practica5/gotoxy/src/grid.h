@@ -30,7 +30,8 @@ class Grid
         struct Value
         {
             bool occupied = false;
-            QGraphicsItem * paint_cell = nullptr;
+            QGraphicsRectItem * paint_cell = nullptr;
+            QGraphicsTextItem * text_cell = nullptr;
             int cx, cy;
             int dist = 0; //dist vecinos
         };
@@ -109,6 +110,40 @@ public:
         int j = l * tile - width / 2;
         return std::make_tuple(i, j);
     }
+
+    void create_graphic_items(QGraphicsScene &scene, QGraphicsView *view)
+    {
+        auto fondo = QColor("LightGreen"); fondo.setAlpha(40);
+        QFont font("Bavaria");
+        font.setPointSize(40);
+        font.setWeight(QFont::TypeWriter);
+        for (auto &row : array)
+            for (auto &elem : row)
+            {
+                elem.paint_cell = scene.addRect(-tile / 2, -tile / 2, tile, tile, QPen(QColor("DarkGreen")), QBrush(fondo));
+                elem.paint_cell->setPos(elem.cx, elem.cy);
+                elem.text_cell = scene.addText("-1", font);
+                elem.text_cell->setPos(elem.cx-tile/2, elem.cy-tile/2);
+                // Get the current transform
+                QTransform transform(elem.text_cell->transform());
+                qreal m11 = transform.m11();    // Horizontal scaling
+                qreal m12 = transform.m12();    // Vertical shearing
+                qreal m13 = transform.m13();    // Horizontal Projection
+                qreal m21 = transform.m21();    // Horizontal shearing
+                qreal m22 = transform.m22();    // vertical scaling
+                qreal m23 = transform.m23();    // Vertical Projection
+                qreal m31 = transform.m31();    // Horizontal Position (DX)
+                qreal m32 = transform.m32();    // Vertical Position (DY)
+                qreal m33 = transform.m33();    // Addtional Projection Factor
+                // Vertical flip
+                m22 = -m22;
+                // Write back to the matrix
+                transform.setMatrix(m11, m12, m13, m21, m22, m23, m31, m32, m33);
+                // Set the items transformation
+                elem.text_cell->setTransform(transform);
+            }
+    }
+
 
 };
 
