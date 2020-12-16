@@ -36,9 +36,8 @@
 #include "grid.h"
 
 using namespace Eigen;
-//grid
 using MyGrid = Grid<int, -2500, int, 5000, int, 100>;
-MyGrid grid;
+
 class SpecificWorker : public GenericWorker {
 
     template<typename T>
@@ -75,6 +74,7 @@ class SpecificWorker : public GenericWorker {
     };
 
 public:
+
     SpecificWorker(TuplePrx tprx, bool startup_check);
 
     ~SpecificWorker();
@@ -93,12 +93,6 @@ public slots:
     int startup_check();
 
     void initialize(int period);
-
-    void compute_navigation_function(Target T);
-
-    std::vector<MyGrid::Value> neighboors(MyGrid::Value v, int dist);
-
-    void reset_cell_distances();
 
 private:
     std::shared_ptr<InnerModel> innerModel;
@@ -135,8 +129,7 @@ private:
 
     std::vector<QGraphicsEllipseItem *> arcs_vector;
 
-    //grid
-    Grid<int, -2500, int, 5000, int, 100> grid;
+    MyGrid grid;
 
 protected:
     void resizeEvent(QResizeEvent *event) {

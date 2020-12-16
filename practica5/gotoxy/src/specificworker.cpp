@@ -95,7 +95,7 @@ void SpecificWorker::initialize(int period) {
     graphicsView->fitInView(scene.sceneRect(), Qt::KeepAspectRatio);
 
     // grid
-    //grid.create_graphic_items(scene);
+    grid.create_graphic_items(scene, graphicsView);
     // recorrer las cajas y poner a ocupado todos las celdas que caigan
     // recorrer las pared y poner las celdas a rojo
 
@@ -106,7 +106,6 @@ void SpecificWorker::initialize(int period) {
         timer.start(Period);
     }
 }
-
 
 void SpecificWorker::fill_grid_with_obstacles() {
     for (int i = 0; i < 10; i++) {
@@ -181,7 +180,7 @@ void SpecificWorker::dynamicWindowApproach(RoboCompGenericBase::TBaseState bStat
         //ordenamos el vector de puntos segun la distancia
         std::vector<tupla> vectorOrdenado = ordenar(vectorSInObs, tr.x(), tr.y());
 
-        if (vectorOrdenado.size() > 0) {
+        if (!vectorOrdenado.empty()) {
             auto[x, y, v, w, alpha] = vectorOrdenado.front();
             std::cout << __FUNCTION__ << " " << x << " " << y << " " << v << " " << w << " " << alpha
                       << std::endl;
@@ -358,58 +357,6 @@ std::vector<SpecificWorker::tupla> SpecificWorker::ordenar(std::vector<tupla> ve
     });
 
     return vector;
-}
-
-void SpecificWorker::compute_navigation_function(Target T) {
-
-// vector con los desplazamientos locales para acceder a los 8 vecinos.
-    reset_cell_distances();
-    int dist = 0;
-    auto t = T.get();
-    Eigen::Vector2f tw = t.value();
-    std::vector<MyGrid::Value> L1 = neighboors(MyGrid::get_value(tw.x(),tw.z()), dist);
-    std::vector<MyGrid::Value> L2 = {};
-    bool end = false;
-    while (!end) {
-        for (auto current_cell : L1) {
-            auto selected = neighboors(current_cell, dist);
-            L2.append(selected);
-        }
-        dist++;
-        end = L2.empty();
-        L1.swap(L2);
-        L2.clear();
-    }
-}
-
-std::vector<MyGrid::Value> SpecificWorker::neighboors(MyGrid::Value v, int dist) {
-    std::vector<std::tuple<int, int>> lista_coor_de_vecinos{{-1, -1},
-                                                            {0,  -1},
-                                                            {1,  -1},
-                                                            {-1, 0},
-                                                            {1,  0},
-                                                            {-1, 1},
-                                                            {0,  1},
-                                                            {-1, 1}}
-
-    std::vector<MyGrid::Value> lista;
-    for (auto[dk, dl] : lista_coor_de_vecinos) {
-        int k = v.k + dk;        // OJO hay que añadir al struct Value las coordenadas de array
-        int l = v.l + dl;
-        if (k, l is_in_limits and and grid[k][l].free and grid[k][l].dist != -1)
-        {
-            grid.set_dist(k.l, dist)
-            lista.append(grid[k][l])
-        }
-    }
-    return lista;
-}
-
-void SpecificWorker::reset_cell_distances() {
-    for (auto &row : array) {
-        for (auto &elem : row)
-            elem.dist = -1;
-    }
 }
 
 
