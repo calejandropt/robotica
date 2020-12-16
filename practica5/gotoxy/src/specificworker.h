@@ -36,7 +36,9 @@
 #include "grid.h"
 
 using namespace Eigen;
-
+//grid
+using MyGrid = Grid<int, -2500, int, 5000, int, 100>;
+MyGrid grid;
 class SpecificWorker : public GenericWorker {
 
     template<typename T>
@@ -84,7 +86,7 @@ public:
 
 public slots:
 
-    void makeObstacles(int n);
+    void fill_grid_with_obstacles();
 
     void compute();
 
@@ -94,7 +96,7 @@ public slots:
 
     void compute_navigation_function(Target T);
 
-    std::vector<Value> neighboors(Value v, int dist);
+    std::vector<MyGrid::Value> neighboors(MyGrid::Value v, int dist);
 
     void reset_cell_distances();
 

@@ -108,14 +108,14 @@ void SpecificWorker::initialize(int period) {
 }
 
 
-void SpecificWorker::makeObstacles(int n) {
-    for (int i = 0; i < n; i++) {
-        auto box = "box" + QString::number(1);
-        auto node = innerModel->getNode(box);
-        auto bmesh = innerModel->getNode("bmesh" + QString::number(1));
-        if (node and bmesh) {
-            auto pose = innerModel->transform("world", box);
-            auto plane = dynamic_cast<InnerModelPlane *>(bmesh);
+void SpecificWorker::fill_grid_with_obstacles() {
+    for (int i = 0; i < 10; i++) {
+        auto caja = "caja" + QString::number(i);
+        auto node = innerModel->getNode(caja);
+        auto mesh = innerModel->getNode("cajaMesh" + QString::number(i));
+        if (node && mesh) {
+            auto pose = innerModel->transform("world", caja);
+            auto plane = dynamic_cast<InnerModelPlane *>(mesh);
             int x = pose.x();
             int z = pose.z();
             int width = plane->depth;
@@ -365,12 +365,14 @@ void SpecificWorker::compute_navigation_function(Target T) {
 // vector con los desplazamientos locales para acceder a los 8 vecinos.
     reset_cell_distances();
     int dist = 0;
-    std::vector<Value> L1 = neighboors(cell_where_target_is_located, dist);
-    std::vector<Value> L2 = {};
+    auto t = T.get();
+    Eigen::Vector2f tw = t.value();
+    std::vector<MyGrid::Value> L1 = neighboors(MyGrid::get_value(tw.x(),tw.z()), dist);
+    std::vector<MyGrid::Value> L2 = {};
     bool end = false;
-    while (not end) {
+    while (!end) {
         for (auto current_cell : L1) {
-            auto selected = neighbors(current_cell, dist);
+            auto selected = neighboors(current_cell, dist);
             L2.append(selected);
         }
         dist++;
@@ -380,7 +382,7 @@ void SpecificWorker::compute_navigation_function(Target T) {
     }
 }
 
-std::vector<Value> SpecificWorker::neighbors(Value v, int dist) {
+std::vector<MyGrid::Value> SpecificWorker::neighboors(MyGrid::Value v, int dist) {
     std::vector<std::tuple<int, int>> lista_coor_de_vecinos{{-1, -1},
                                                             {0,  -1},
                                                             {1,  -1},
@@ -390,8 +392,8 @@ std::vector<Value> SpecificWorker::neighbors(Value v, int dist) {
                                                             {0,  1},
                                                             {-1, 1}}
 
-    std::vector<Value> lista;
-    for (auto[dk, dl] : lista_de_coor_de_vecinos) {
+    std::vector<MyGrid::Value> lista;
+    for (auto[dk, dl] : lista_coor_de_vecinos) {
         int k = v.k + dk;        // OJO hay que añadir al struct Value las coordenadas de array
         int l = v.l + dl;
         if (k, l is_in_limits and and grid[k][l].free and grid[k][l].dist != -1)
@@ -400,13 +402,14 @@ std::vector<Value> SpecificWorker::neighbors(Value v, int dist) {
             lista.append(grid[k][l])
         }
     }
-    return lista
+    return lista;
 }
 
 void SpecificWorker::reset_cell_distances() {
-    for (auto &row : array)
+    for (auto &row : array) {
         for (auto &elem : row)
             elem.dist = -1;
+    }
 }
 
 

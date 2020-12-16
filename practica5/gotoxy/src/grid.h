@@ -77,10 +77,9 @@ public:
      * @param z
      * @return
      */
-    bool get_value(int x, int z) {
-        //auto [i, j] = transformar(x,z);
-        //return  this->array[x][z];
-        return true;
+    std::vector<Value> get_value(int x, int z) {
+        auto [i, j] = transformWtG(x,z);
+        return  this->array[x][z];
     }
 
     void set_occupied(int x, int z) {
